@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerador de NFS-e</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app">
+    <h1>Gerador de NFS-e</h1>
+    <p class="muted">Preencha os dados, insira os itens e gere sua Nota Fiscal.</p>
+
+    <div class="grid">
+      <div>
+        <section>
+          <label>Nome do Prestador</label>
+          <input id="providerName" type="text" placeholder="Ex: Casa de Serviços LTDA"/>
+
+          <label>CNPJ / CPF</label>
+          <input id="providerId" type="text" placeholder="00.000.000/0000-00"/>
+
+          <label>Cliente</label>
+          <input id="clientName" type="text" placeholder="Nome do cliente"/>
+
+          <label>Data da Emissão</label>
+          <input id="issueDate" type="date" />
+        </section>
+
+        <section>
+          <div class="label-row">
+            <label>Itens da Nota</label>
+            <button id="addItemBtn" class="btn small">+ Adicionar item</button>
+          </div>
+
+          <div id="itemsContainer" class="items"></div>
+        </section>
+
+        <section>
+          <label>Impostos (%)</label>
+
+          <div class="tax-grid">
+            <input id="irpf" type="number" placeholder="IRPF" value="1.5">
+            <input id="pis" type="number" placeholder="PIS" value="0.65">
+            <input id="cofins" type="number" placeholder="COFINS" value="3.0">
+            <input id="inss" type="number" placeholder="INSS" value="8.0">
+            <input id="iss" type="number" placeholder="ISSQN" value="2.0">
+          </div>
+        </section>
+
+        <div class="controls">
+          <button id="generateBtn" class="btn">Gerar Nota Fiscal</button>
+          <button id="printBtn" class="btn green">Imprimir / Salvar PDF</button>
+          <button id="clearBtn" class="btn red">Limpar</button>
+        </div>
+      </div>
+
+      <aside>
+        <div id="invoice" class="invoice">
+          <h2>Nota Fiscal aparecerá aqui</h2>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
