@@ -1,81 +1,113 @@
+
 const addItemBtn = document.getElementById("addItemBtn");
 const itemsContainer = document.getElementById("itemsContainer");
 const generateBtn = document.getElementById("generateBtn");
 const printBtn = document.getElementById("printBtn");
 const clearBtn = document.getElementById("clearBtn");
-const invoiceBox = document.getElementById("invoice");
 
-function addItem() {
-  const row = document.createElement("div");
-  row.className = "item-row";
+const invoiceContainer = document.getElementById("invoice");
 
-  row.innerHTML = `
-    <input type="text" placeholder="Descrição">
-    <input type="number" placeholder="Valor" step="0.01">
-    <button class="item-delete">X</button>
-  `;
 
-  row.querySelector(".item-delete").onclick = () => row.remove();
 
-  itemsContainer.appendChild(row);
-}
+addItemBtn.addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.classList.add("item-row");
 
-addItemBtn.onclick = addItem;
+    row.innerHTML = `
+        <input type="text" class="item-name" placeholder="Descrição do item">
+        <input type="number" class="item-value" placeholder="Valor" step="0.01">
+        <button class="item-delete">X</button>
+    `;
+
+    row.querySelector(".item-delete").addEventListener("click", () => {
+        row.remove();
+    });
+
+    itemsContainer.appendChild(row);
+});
+
+
+
+
+generateBtn.addEventListener("click", generateInvoice);
 
 function generateInvoice() {
-  const provider = document.getElementById("providerName").value;
-  const providerId = document.getElementById("providerId").value;
-  const client = document.getElementById("clientName").value;
-  const date = document.getElementById("issueDate").value;
 
-  const irpf = parseFloat(irpf.value) || 0;
-  const pisV = parseFloat(pis.value) || 0;
-  const cofinsV = parseFloat(cofins.value) || 0;
-  const inssV = parseFloat(inss.value) || 0;
-  const issV = parseFloat(iss.value) || 0;
 
-  let itens = [];
-  let total = 0;
 
-  [...itemsContainer.children].forEach(row => {
-    const desc = row.children[0].value;
-    const val = parseFloat(row.children[1].value);
+    const providerName = document.getElementById("providerName").value;
+    const providerId = document.getElementById("providerId").value;
+    const clientName = document.getElementById("clientName").value;
+    const issueDate = document.getElementById("issueDate").value;
 
-    if (desc && val > 0) {
-      itens.push({ desc, val });
-      total += val;
-    }
-  });
+    
 
-  const irpfVal = total * (irpf / 100);
-  const pisVal = total * (pisV / 100);
-  const cofinsVal = total * (cofinsV / 100);
-  const inssVal = total * (inssV / 100);
-  const issVal = total * (issV / 100);
+    const irpf = parseFloat(document.getElementById("irpf").value) || 0;
+    const pis = parseFloat(document.getElementById("pis").value) || 0;
+    const cofins = parseFloat(document.getElementById("cofins").value) || 0;
+    const inss = parseFloat(document.getElementById("inss").value) || 0;
+    const iss = parseFloat(document.getElementById("iss").value) || 0;
 
-  invoiceBox.innerHTML = `
-    <h2>Nota Fiscal de Serviço</h2>
+    const itemNames = [...document.querySelectorAll(".item-name")];
+    const itemValues = [...document.querySelectorAll(".item-value")];
 
-    <p><strong>Prestador:</strong> ${provider}</p>
-    <p><strong>CNPJ/CPF:</strong> ${providerId}</p>
-    <p><strong>Cliente:</strong> ${client}</p>
-    <p><strong>Data:</strong> ${date}</p>
+    let totalServicos = 0;
+    let listaItensHTML = "";
 
-    <h3>Itens</h3>
-    <ul>
-      ${itens.map(i => `<li>${i.desc} — R$ ${i.val.toFixed(2)}</li>`).join("")}
-    </ul>
+    itemValues.forEach((val, i) => {
+        const nome = itemNames[i].value;
+        const valor = parseFloat(val.value) || 0;
 
-    <h3>Resumo</h3>
-    <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
-    <p>IRPF: R$ ${irpfVal.toFixed(2)}</p>
-    <p>PIS: R$ ${pisVal.toFixed(2)}</p>
-    <p>COFINS: R$ ${cofinsVal.toFixed(2)}</p>
-    <p>INSS: R$ ${inssVal.toFixed(2)}</p>
-    <p>ISSQN: R$ ${issVal.toFixed(2)}</p>
-  `;
+        if (nome.trim() !== "" && valor > 0) {
+            listaItensHTML += `<li>${nome} — R$ ${valor.toFixed(2)}</li>`;
+            totalServicos += valor;
+        }
+    });
+
+
+    const calcIRPF = (totalServicos * irpf) / 100;
+    const calcPIS = (totalServicos * pis) / 100;
+    const calcCOFINS = (totalServicos * cofins) / 100;
+    const calcINSS = (totalServicos * inss) / 100;
+    const calcISS = (totalServicos * iss) / 100;
+
+    const totalImpostos = calcIRPF + calcPIS + calcCOFINS + calcINSS + calcISS;
+    const totalLiquido = totalServicos - totalImpostos;
+
+
+    invoiceContainer.innerHTML = `
+        <div class="invoice">
+            <h2>Nota Fiscal de Serviço (NFS-e)</h2>
+
+            <p><strong>Prestador:</strong> ${providerName}</p>
+            <p><strong>CNPJ/CPF:</strong> ${providerId}</p>
+            <p><strong>Cliente:</strong> ${clientName}</p>
+            <p><strong>Data:</strong> ${issueDate}</p>
+
+            <h3>Itens</h3>
+            <ul>${listaItensHTML}</ul>
+
+            <h3>Totais</h3>
+            <p><strong>Total dos Serviços:</strong> R$ ${totalServicos.toFixed(2)}</p>
+            <p><strong>IRPF:</strong> R$ ${calcIRPF.toFixed(2)}</p>
+            <p><strong>PIS:</strong> R$ ${calcPIS.toFixed(2)}</p>
+            <p><strong>COFINS:</strong> R$ ${calcCOFINS.toFixed(2)}</p>
+            <p><strong>INSS:</strong> R$ ${calcINSS.toFixed(2)}</p>
+            <p><strong>ISSQN:</strong> R$ ${calcISS.toFixed(2)}</p>
+
+            <p><strong>Total de Impostos:</strong> R$ ${totalImpostos.toFixed(2)}</p>
+            <p><strong>Total Líquido:</strong> R$ ${totalLiquido.toFixed(2)}</p>
+        </div>
+    `;
 }
 
-generateBtn.onclick = generateInvoice;
-printBtn.onclick = () => window.print();
-clearBtn.onclick = () => location.reload();
+
+printBtn.addEventListener("click", () => {
+    window.print();
+});
+
+
+clearBtn.addEventListener("click", () => {
+    invoiceContainer.innerHTML = "";
+    itemsContainer.innerHTML = "";
+});
