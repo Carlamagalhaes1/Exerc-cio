@@ -1,4 +1,3 @@
-
 const addItemBtn = document.getElementById("addItemBtn");
 const itemsContainer = document.getElementById("itemsContainer");
 const generateBtn = document.getElementById("generateBtn");
@@ -8,14 +7,14 @@ const clearBtn = document.getElementById("clearBtn");
 const invoiceContainer = document.getElementById("invoice");
 
 
-
+// Adicionar itens
 addItemBtn.addEventListener("click", () => {
     const row = document.createElement("div");
     row.classList.add("item-row");
 
     row.innerHTML = `
         <input type="text" class="item-name" placeholder="Descrição do item">
-        <input type="number" class="item-value" placeholder="Valor" step="0.01">
+        <input type="number" class="item-value" placeholder="Valor" step="0.01" min="0">
         <button class="item-delete">X</button>
     `;
 
@@ -27,44 +26,67 @@ addItemBtn.addEventListener("click", () => {
 });
 
 
-
-
 generateBtn.addEventListener("click", generateInvoice);
 
+
+// Função principal
 function generateInvoice() {
 
-
-
-    const providerName = document.getElementById("providerName").value;
-    const providerId = document.getElementById("providerId").value;
-    const clientName = document.getElementById("clientName").value;
+    // PEGAR DADOS
+    const providerName = document.getElementById("providerName").value.trim();
+    const providerId = document.getElementById("providerId").value.trim();
+    const clientName = document.getElementById("clientName").value.trim();
     const issueDate = document.getElementById("issueDate").value;
 
-    
+    // Verificação dos campos principais
+    if (!providerName || !providerId || !clientName || !issueDate) {
+        alert("Por favor, preencha todos os dados do prestador, cliente e data.");
+        return;
+    }
 
-    const irpf = parseFloat(document.getElementById("irpf").value) || 0;
-    const pis = parseFloat(document.getElementById("pis").value) || 0;
-    const cofins = parseFloat(document.getElementById("cofins").value) || 0;
-    const inss = parseFloat(document.getElementById("inss").value) || 0;
-    const iss = parseFloat(document.getElementById("iss").value) || 0;
+    // IMPOSTOS
+    const irpf = checkNumber(document.getElementById("irpf").value, "IRPF");
+    const pis = checkNumber(document.getElementById("pis").value, "PIS");
+    const cofins = checkNumber(document.getElementById("cofins").value, "COFINS");
+    const inss = checkNumber(document.getElementById("inss").value, "INSS");
+    const iss = checkNumber(document.getElementById("iss").value, "ISSQN");
 
+    // Se alguma verificação falhou, parar
+    if (irpf === false || pis === false || cofins === false || inss === false || iss === false) {
+        return;
+    }
+
+    // ITENS
     const itemNames = [...document.querySelectorAll(".item-name")];
     const itemValues = [...document.querySelectorAll(".item-value")];
 
+    if (itemNames.length === 0) {
+        alert("Adicione pelo menos 1 item na Nota Fiscal.");
+        return;
+    }
+
     let totalServicos = 0;
     let listaItensHTML = "";
+    let validItems = true;
 
     itemValues.forEach((val, i) => {
-        const nome = itemNames[i].value;
-        const valor = parseFloat(val.value) || 0;
+        const nome = itemNames[i].value.trim();
+        const valor = parseFloat(val.value);
 
-        if (nome.trim() !== "" && valor > 0) {
+        if (!nome || isNaN(valor) || valor <= 0) {
+            validItems = false;
+        } else {
             listaItensHTML += `<li>${nome} — R$ ${valor.toFixed(2)}</li>`;
             totalServicos += valor;
         }
     });
 
+    if (!validItems) {
+        alert("Todos os itens devem ter nome e valor numérico maior que zero.");
+        return;
+    }
 
+    // CALCULOS
     const calcIRPF = (totalServicos * irpf) / 100;
     const calcPIS = (totalServicos * pis) / 100;
     const calcCOFINS = (totalServicos * cofins) / 100;
@@ -75,6 +97,7 @@ function generateInvoice() {
     const totalLiquido = totalServicos - totalImpostos;
 
 
+    // EXIBIR NOTA
     invoiceContainer.innerHTML = `
         <div class="invoice">
             <h2>Nota Fiscal de Serviço (NFS-e)</h2>
@@ -102,10 +125,30 @@ function generateInvoice() {
 }
 
 
+
+// Função para validar números
+function checkNumber(value, fieldName) {
+    if (value.trim() === "") {
+        alert(`O campo ${fieldName} não pode ficar vazio.`);
+        return false;
+    }
+
+    const num = parseFloat(value);
+
+    if (isNaN(num) || num < 0) {
+        alert(`O campo ${fieldName} deve ser um número válido.`);
+        return false;
+    }
+
+    return num;
+}
+
+
+
+// BOTOES
 printBtn.addEventListener("click", () => {
     window.print();
 });
-
 
 clearBtn.addEventListener("click", () => {
     invoiceContainer.innerHTML = "";
